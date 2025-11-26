@@ -7,7 +7,6 @@ import multer from "multer";
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Get user's own projects (authenticated) - Must come before other GET routes
 router.get("/", authenticate, async (req, res) => {
   try {
     const projects = await Project.find({ user: req.userId }).sort({
@@ -19,7 +18,6 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// Create project with images
 router.post("/", authenticate, upload.array("images", 10), async (req, res) => {
   try {
     const {
@@ -39,7 +37,6 @@ router.post("/", authenticate, upload.array("images", 10), async (req, res) => {
         .json({ message: "At least one image is required" });
     }
 
-    // Upload images to Cloudinary
     const uploadPromises = req.files.map((file) => {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -59,7 +56,6 @@ router.post("/", authenticate, upload.array("images", 10), async (req, res) => {
 
     const images = await Promise.all(uploadPromises);
 
-    // Create project
     const project = new Project({
       user: req.userId,
       title,
@@ -81,24 +77,20 @@ router.post("/", authenticate, upload.array("images", 10), async (req, res) => {
   }
 });
 
-// Get all projects for explore page (public) with search functionality
 router.get("/explore", async (req, res) => {
   try {
     const { search, category } = req.query;
     let query = {};
 
-    // Filter by category if provided
     if (category && category !== "all") {
       query.category = category;
     }
 
-    // Fetch projects with user information
     let projects = await Project.find(query)
       .sort({ createdAt: -1 })
       .populate("user", "name profileImage profession skills")
-      .limit(100); // Limit to 100 projects for performance
+      .limit(100);
 
-    // If search query provided, filter by title, description, user name, or skills
     if (search && search.trim()) {
       const searchLower = search.toLowerCase();
       projects = projects.filter((project) => {
@@ -132,7 +124,6 @@ router.get("/explore", async (req, res) => {
   }
 });
 
-// Get all projects by user (public)
 router.get("/user/:userId", async (req, res) => {
   try {
     const projects = await Project.find({ user: req.params.userId })
@@ -144,7 +135,6 @@ router.get("/user/:userId", async (req, res) => {
   }
 });
 
-// Get single project (public)
 router.get("/:projectId", async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId).populate(
@@ -162,7 +152,6 @@ router.get("/:projectId", async (req, res) => {
   }
 });
 
-// Update project
 router.put(
   "/:projectId",
   authenticate,
@@ -242,7 +231,6 @@ router.put(
   }
 );
 
-// Delete project
 router.delete("/:projectId", authenticate, async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId);
@@ -255,7 +243,6 @@ router.delete("/:projectId", authenticate, async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    // Delete images from Cloudinary
     const deletePromises = project.images.map((image) =>
       cloudinary.uploader.destroy(image.publicId)
     );

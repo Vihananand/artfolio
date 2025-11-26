@@ -4,7 +4,6 @@ import {
   resetPasswordEmailTemplate,
 } from "./emailTemplates.js";
 
-// Send welcome email after successful registration
 export const sendWelcomeEmail = async (userEmail, userName) => {
   try {
     const mailjet = getMailjetClient();
@@ -27,7 +26,6 @@ export const sendWelcomeEmail = async (userEmail, userName) => {
   }
 };
 
-// Send password reset email
 export const sendPasswordResetEmail = async (
   userEmail,
   userName,

@@ -9,27 +9,22 @@ import {
 
 const router = express.Router();
 
-// Register
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Create new user
     const user = new User({ name, email, password });
     await user.save();
 
-    // Create token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -37,7 +32,6 @@ router.post("/register", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    // Send welcome email (don't wait for it to complete)
     sendWelcomeEmail(user.email, user.name).catch((err) =>
       console.error("Failed to send welcome email:", err)
     );
@@ -55,29 +49,24 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Create token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
 
-    // Set cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -98,13 +87,11 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Logout
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
   res.json({ message: "Logout successful" });
 });
 
-// Check auth status
 router.get("/me", async (req, res) => {
   try {
     const token = req.cookies.token;
@@ -139,7 +126,6 @@ router.get("/me", async (req, res) => {
   }
 });
 
-// Forgot Password
 router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
@@ -151,22 +137,18 @@ router.post("/forgot-password", async (req, res) => {
         .json({ message: "No account found with that email address" });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto
       .createHash("sha256")
       .update(resetToken)
       .digest("hex");
 
-    // Save token to user
     user.resetPasswordToken = hashedToken;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    // Create reset URL
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
-    // Send email (don't wait for it to complete)
     sendPasswordResetEmail(user.email, user.name, resetUrl).catch((err) =>
       console.error("Failed to send password reset email:", err)
     );
@@ -180,16 +162,13 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// Reset Password
 router.post("/reset-password/:token", async (req, res) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
 
-    // Hash the token from URL to compare with stored hash
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    // Find user with valid token
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
       resetPasswordExpires: { $gt: Date.now() },
@@ -201,7 +180,6 @@ router.post("/reset-password/:token", async (req, res) => {
       });
     }
 
-    // Update password
     user.password = password;
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;

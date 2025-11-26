@@ -1,4 +1,3 @@
-// Artistic Welcome Email Template
 export const welcomeEmailTemplate = (userName) => {
   return `
 <!DOCTYPE html>
@@ -160,7 +159,6 @@ export const welcomeEmailTemplate = (userName) => {
   `;
 };
 
-// Artistic Password Reset Email Template
 export const resetPasswordEmailTemplate = (userName, resetLink) => {
   return `
 <!DOCTYPE html>

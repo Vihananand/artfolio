@@ -8,7 +8,6 @@ const api = axios.create({
   },
 });
 
-// Auth endpoints
 export const authAPI = {
   register: (data) => api.post("/auth/register", data),
   login: (data) => api.post("/auth/login", data),
@@ -16,7 +15,6 @@ export const authAPI = {
   getMe: () => api.get("/auth/me"),
 };
 
-// User endpoints
 export const userAPI = {
   getUser: (userId) => api.get(`/user/${userId}`),
   updateProfile: (data) => api.put("/user/profile", data),
@@ -27,7 +25,6 @@ export const userAPI = {
   deleteProfile: () => api.delete("/user/profile"),
 };
 
-// Project endpoints
 export const projectAPI = {
   getAllProjects: (params) => api.get("/projects/explore", { params }),
   getUserProjects: (userId) => api.get(`/projects/user/${userId}`),
