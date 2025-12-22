@@ -2,6 +2,9 @@ import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 
 const ProjectCard = ({ project }) => {
+  // Use thumbnailIndex if available, fallback to first image
+  const thumbnailUrl = project.images[project.thumbnailIndex || 0]?.url || project.images[0]?.url;
+  
   return (
     <Link
       to={`/project/${project._id}`}
@@ -9,7 +12,7 @@ const ProjectCard = ({ project }) => {
     >
       <div className="aspect-4/3 overflow-hidden relative">
         <img
-          src={project.images[0]?.url}
+          src={thumbnailUrl}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
