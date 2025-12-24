@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import {
   sendWelcomeEmail,
   sendPasswordResetEmail,
+  sendPasswordResetSuccessEmail,
 } from "../utils/emailService.js";
 
 const router = express.Router();
@@ -185,6 +186,10 @@ router.post("/reset-password/:token", async (req, res) => {
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
     await user.save();
+
+    sendPasswordResetSuccessEmail(user.email, user.name).catch((err) =>
+      console.error("Failed to send password reset success email:", err)
+    );
 
     res.json({
       message: "Password has been reset successfully",
