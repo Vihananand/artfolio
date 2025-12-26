@@ -213,14 +213,18 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
+              {projects.map((project) => {
+                // Use thumbnailIndex if available, fallback to first image
+                const thumbnailUrl = project.images[project.thumbnailIndex || 0]?.url || project.images[0]?.url;
+                
+                return (
                 <div
                   key={project._id}
                   className="group bg-white rounded-2xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all"
                 >
                   <div className="aspect-video overflow-hidden">
                     <img
-                      src={project.images[0]?.url}
+                      src={thumbnailUrl}
                       alt={project.title}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
@@ -250,7 +254,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
